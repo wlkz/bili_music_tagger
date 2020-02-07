@@ -69,4 +69,4 @@ bili-music-tagger ./source
 
 ## 感谢
 
-@haozi23333 提供的 Bilibili 音频的 API。原文：[https://haozi.moe/2019/11/02/bilibili-audio-api/](https://haozi.moe/2019/11/02/bilibili-audio-api/)
+[@haozi23333](https://github.com/haozi23333) 提供的 Bilibili 音频的 API。原文：[https://haozi.moe/2019/11/02/bilibili-audio-api/](https://haozi.moe/2019/11/02/bilibili-audio-api/)
