@@ -182,7 +182,7 @@ class BilibiliMusicTagger:
 @click.argument('source', required=True, type=click.Path(exists=True))
 @click.argument('output_dir', default=Path.cwd() / 'output', type=click.Path())
 @click.option('--temp-dir', '-t', default=Path.cwd() / 'temp', show_default='./temp', type=click.Path(), help='temp directory, where some cache will put in.')
-@click.version_option
+@click.version_option()
 def cli(source, output_dir, temp_dir):
     """A auto tagger for Bilibili music.
 

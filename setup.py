@@ -2,6 +2,9 @@ from setuptools import setup
 
 from bili_music_tagger import VERSION
 
+with open('README.md', 'r', encoding='utf-8') as fp:
+    long_description = fp.read()
+
 setup(
     name='bili_music_tagger',
     version=VERSION,
