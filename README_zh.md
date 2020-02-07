@@ -10,17 +10,17 @@
 
 Bilibili 音频缓存的文件（以 android 为例）在 `/sdcard/android/data/tv.danmaku.bili/files/audio_music` 里。里面文件为 AU ID 命名的文件。实际上这是使用 `mp4` 封装的 `aac` 音乐，可以直接添加后缀 `m4a` ，即可在大多数播放器播放。
 
-然而这些文件并没有像网易云音乐一样自动帮我们添加好标签和封面。这个脚本能自动从 Bilibili 网站上获取歌曲信息，自动填写歌曲 tag 。
+然而这些文件并没有像网易云音乐一样自动帮我们添加好标签和封面。这个脚本能自动从 Bilibili 上获取歌曲信息，自动填写歌曲 tag 。
 
 ![tag_simple](docs/tag_simple.png)
 
-目前支持以上的 tag ，以及封面。
+目前支持以上已填写的 tag ，以及专辑封面。
 
 ## 使用方法
 
 ### 准备
 
-下载源码（或者 `git clone` ）。
+[下载源码](https://github.com/wlkz/bili_music_tagger/archive/master.zip)（或者 `git clone` ）。
 
 #### 安装（推荐）
 
@@ -47,7 +47,7 @@ mutagen
 ### 快速开始
 
 ```text
-Usage: bili_music_tagger.py [OPTIONS] SOURCE [OUTPUT_DIR]
+Usage: bili-music-tagger [OPTIONS] SOURCE [OUTPUT_DIR]
 
   SOURCE 是待转换文件或者目录的路径.
 
@@ -55,6 +55,7 @@ Usage: bili_music_tagger.py [OPTIONS] SOURCE [OUTPUT_DIR]
 
 Options:
   -t, --temp-dir PATH  临时目录，存放各种缓存。
+  --version            显示版本号。
   --help               显示帮助。
 ```
 
@@ -65,3 +66,7 @@ bili-music-tagger ./source
 ```
 
 输出默认将在 `./output` 下。
+
+## 感谢
+
+@haozi23333 提供的 Bilibili 音频的 API。原文：[https://haozi.moe/2019/11/02/bilibili-audio-api/](https://haozi.moe/2019/11/02/bilibili-audio-api/)

@@ -1,18 +1,17 @@
 # bili_music_tagger
 
-
 A auto tagger for Bilibili music.
 
 [中文 README](README_zh.md)
 
-![](docs/before.png)
+![before](docs/before.png)
 
-![](docs/after.png)
+![after](docs/after.png)
 
 ## Usage
 
 ```text
-Usage: bili_music_tagger.py [OPTIONS] SOURCE [OUTPUT_DIR]
+Usage: bili_music_tagger [OPTIONS] SOURCE [OUTPUT_DIR]
 
   A auto tagger for Bilibili music.
 
@@ -36,3 +35,5 @@ Options:
                        [default: (./temp)]
   --help               Show this message and exit.
 ```
+
+You can find more details in [Chinese README](README_zh.md).
