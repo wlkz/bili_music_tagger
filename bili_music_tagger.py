@@ -5,6 +5,9 @@ from pathlib import Path
 
 import click
 import requests
+from mutagen import File
+from mutagen.flac import FLAC, Picture
+from mutagen.id3 import PictureType
 from mutagen.mp4 import MP4, AtomDataType, MP4Cover
 
 VERSION = '0.1'
@@ -122,6 +125,14 @@ def spilt_artist_str(s):
     return s.split(ARTIST_SPLIT_SYMBOL)
 
 
+def format_artist_list(li):
+    return '/'.join(li)
+
+
+def get_year_from_timestamp(timestramp):
+    return datetime.datetime.fromtimestamp(timestramp / 1000).year
+
+
 class BilibiliMusicTagger:
     def __init__(self, album_cache, cover_cache):
         self.album_cache = album_cache
@@ -135,7 +146,7 @@ class BilibiliMusicTagger:
         au_id = int(input_path.stem)
         audio_info = get_audio_info(au_id)
 
-        filename = f'{spilt_artist_str(audio_info["author"])[0]} - {audio_info["title"]}.m4a'
+        filename = f'{spilt_artist_str(audio_info["author"])[0]} - {audio_info["title"]}'
 
         print(f'processing: {filename}')
 
@@ -162,20 +173,46 @@ class BilibiliMusicTagger:
         with album_cover_path.open('rb') as fp:
             cover_image = fp.read()
 
-        tags = {
-            '\xa9nam': audio_info['title'],
-            '\xa9alb': album_info['menusRespones']['title'],
-            '\xa9ART': '/'.join(spilt_artist_str(audio_info['author'])),
-            '\xa9day': str(datetime.datetime.fromtimestamp(album_info['menusRespones']['pbtime'] / 1000).year),
-            'aART': '/'.join(spilt_artist_str(album_info['menusRespones']['mbnames'])),
-            'trkn': [(track_id + 1, album_info['menusRespones']['songNum'])],
-            'disk': [(1, 1)],
-            'covr': [MP4Cover(cover_image, imageformat=image_format)],
-        }
+        audio_file = File(output_path)
 
-        m4a_file = MP4(output_path)
-        m4a_file.update(tags)
-        m4a_file.save()
+        if isinstance(audio_file, MP4):
+            suffix = '.m4a'
+            tags = {
+                '\xa9nam': audio_info['title'],
+                '\xa9alb': album_info['menusRespones']['title'],
+                '\xa9ART': format_artist_list(spilt_artist_str(audio_info['author'])),
+                '\xa9day': str(get_year_from_timestamp(album_info['menusRespones']['pbtime'])),
+                'aART': format_artist_list(spilt_artist_str(album_info['menusRespones']['mbnames'])),
+                'trkn': [(track_id + 1, album_info['menusRespones']['songNum'])],
+                'disk': [(1, 1)],
+                'covr': [MP4Cover(cover_image, imageformat=image_format)],
+            }
+        elif isinstance(audio_file, FLAC):
+            suffix = '.flac'
+            tags = {
+                'ALBUM': album_info['menusRespones']['title'],
+                'ARTIST': format_artist_list(spilt_artist_str(audio_info['author'])),
+                'ALBUMARTIST': format_artist_list(spilt_artist_str(album_info['menusRespones']['mbnames'])),
+                'DATE': str(get_year_from_timestamp(album_info['menusRespones']['pbtime'])),
+                'TITLE': audio_info['title'],
+                'DISCNUMBER': '1',
+                'DISCTOTAL': '1',
+                'TRACKTOTAL': str(album_info['menusRespones']['songNum']),
+                'TRACKNUMBER': str(track_id + 1),
+            }
+
+            picture = Picture()
+            picture.data = cover_image
+            picture.type = PictureType.COVER_FRONT
+
+            audio_file.add_picture(picture)
+        else:
+            raise TypeError(f'unknown file tpye')
+
+        audio_file.update(tags)
+        audio_file.save()
+
+        output_path.replace(output_path.with_suffix(suffix))
 
 
 @click.command()

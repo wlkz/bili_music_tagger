@@ -8,9 +8,11 @@
 
 ## 动机
 
-Bilibili 音频缓存的文件（以 android 为例）在 `/sdcard/android/data/tv.danmaku.bili/files/audio_music` 里。里面文件为 AU ID 命名的文件。实际上这是使用 `mp4` 封装的 `aac` 音乐，可以直接添加后缀 `m4a` ，即可在大多数播放器播放。
+Bilibili 音频缓存的文件（以 android 为例）在 `/sdcard/android/data/tv.danmaku.bili/files/audio_music` 里。里面文件为 AU ID 命名的文件。
 
-然而这些文件并没有像网易云音乐一样自动帮我们添加好标签和封面。这个脚本能自动从 Bilibili 上获取歌曲信息，自动填写歌曲元数据，并将歌曲名称命名为 `{第一位艺术家} - {标题}.m4a` 格式。
+这些文件的封装格式有两种，一种是使用 `flac` 封装的无损音乐，非无损音乐是使用 `mp4` 封装的 `aac` 音乐。我们可以直接添加文件后缀 ，即可在大多数播放器播放。
+
+然而这些文件并没有像网易云音乐一样自动帮我们添加好标签和封面。这个脚本能自动判断音乐格式，从 Bilibili 上获取歌曲信息，自动填写歌曲元数据，并将歌曲名称命名为 `{第一位艺术家} - {标题}.{对应后缀}` 。
 
 ![tag_simple](docs/tag_simple.png)
 
@@ -137,6 +139,18 @@ bili-music-tagger ./source
 - 其他功能
 
   请发 [Issue](https://github.com/wlkz/bili_music_tagger/issues) 。
+
+## 更新日志
+
+### 0.1
+
+#### 2020 年 2 月 21 日
+
+- 增加对缓存的无损音乐的支持
+
+#### 2020 年 2 月 1 日
+
+- 完成基本功能
 
 ## 感谢
 
