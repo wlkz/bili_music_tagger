@@ -152,7 +152,13 @@ class BilibiliMusicTagger:
             self.process_a_file(p, output_dir)
 
     def process_a_file(self, input_path, output_dir):
-        au_id = int(input_path.stem)
+        au_id = input_path.name
+
+        if not au_id.isdigit():
+            print(f'unexpected file: {input_path}')
+            return
+
+        au_id = int(au_id)
         audio_info = self.audio_cache.get(au_id)
 
         filename = f'{spilt_artist_str(audio_info["author"])[0]} - {audio_info["title"]}'
