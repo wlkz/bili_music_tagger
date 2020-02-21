@@ -86,36 +86,44 @@ class CoverCache(Cache):
         return img_path
 
 
-class AlbumCache(Cache):
+class JsonCache(Cache):
+    JSON_URL = None
+    JSON_DIR_NAME = None
+
     def __init__(self, local_dir):
         super().__init__()
         local_dir = Path(local_dir)
-        self.info_dir = local_dir / 'info'
-        self.info_dir.mkdir(exist_ok=True)
+        self.json_dir = local_dir / self.JSON_DIR_NAME
+        self.json_dir.mkdir(exist_ok=True)
 
     def _get_from_local(self, k):
-        info_path = self.info_dir / f'{k}.json'
-        if not info_path.exists():
+        json_path = self.json_dir / f'{k}.json'
+        if not json_path.exists():
             return None
-        with info_path.open('r', encoding='utf-8') as fp:
-            info = json.load(fp)
-        self._put_to_cache(k, info)
-        return info
+        with json_path.open('r', encoding='utf-8') as fp:
+            json_obj = json.load(fp)
+        self._put_to_cache(k, json_obj)
+        return json_obj
 
     def _get_from_remote(self, k):
-        url = ALBUM_INFO_URL.format(k)
+        url = self.JSON_URL.format(k)
         res = requests.get(url)
-        album_info = get_json_from_respond(res)
-        info_path = self.info_dir / f'{k}.json'
-        with info_path.open('w', encoding='utf-8') as fp:
-            json.dump(album_info, fp)
-        self._put_to_cache(k, album_info)
-        return album_info
+        json_obj = get_json_from_respond(res)
+        json_path = self.json_dir / f'{k}.json'
+        with json_path.open('w', encoding='utf-8') as fp:
+            json.dump(json_obj, fp,  ensure_ascii=False)
+        self._put_to_cache(k, json_obj)
+        return json_obj
 
 
-def get_audio_info(au_id):
-    res = requests.get(AUDIO_INFO_URL.format(au_id))
-    return get_json_from_respond(res)
+class AlbumCache(JsonCache):
+    JSON_URL = ALBUM_INFO_URL
+    JSON_DIR_NAME = 'album'
+
+
+class AudioCache(JsonCache):
+    JSON_URL = AUDIO_INFO_URL
+    JSON_DIR_NAME = 'audio'
 
 
 ARTIST_SPLIT_SYMBOL = ' · '
@@ -134,8 +142,9 @@ def get_year_from_timestamp(timestramp):
 
 
 class BilibiliMusicTagger:
-    def __init__(self, album_cache, cover_cache):
+    def __init__(self, album_cache, audio_cache, cover_cache):
         self.album_cache = album_cache
+        self.audio_cache = audio_cache
         self.cover_cache = cover_cache
 
     def process_a_dir(self, input_dir, output_dir):
@@ -144,7 +153,7 @@ class BilibiliMusicTagger:
 
     def process_a_file(self, input_path, output_dir):
         au_id = int(input_path.stem)
-        audio_info = get_audio_info(au_id)
+        audio_info = self.audio_cache.get(au_id)
 
         filename = f'{spilt_artist_str(audio_info["author"])[0]} - {audio_info["title"]}'
 
@@ -235,9 +244,10 @@ def cli(source, output_dir, temp_dir):
     temp_dir.mkdir(exist_ok=True)
 
     album_cache = AlbumCache(temp_dir)
+    audio_cache = AudioCache(temp_dir)
     cover_cache = CoverCache(temp_dir)
 
-    tag_adder = BilibiliMusicTagger(album_cache, cover_cache)
+    tag_adder = BilibiliMusicTagger(album_cache, audio_cache, cover_cache)
 
     if source.is_dir():
         tag_adder.process_a_dir(source, output_dir)
