@@ -22,6 +22,7 @@ Usage: bili-music-tagger [OPTIONS] SOURCE [OUTPUT_DIR]
 Options:
   -t, --temp-dir PATH  temp directory, where some cache will put in.
                        [default: (./temp)]
+  --overwrite          overwrite file if file exists.
   --version            Show the version and exit.
   --help               Show this message and exit.
 ```

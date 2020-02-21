@@ -78,6 +78,7 @@ Usage: bili-music-tagger [OPTIONS] SOURCE [OUTPUT_DIR]
 
 Options:
   -t, --temp-dir PATH  临时目录，存放各种缓存。
+  --overwrite          当文件存在时，覆盖文件。
   --version            显示版本号。
   --help               显示帮助。
 ```
@@ -153,6 +154,7 @@ bili-music-tagger ./source
 - 增加对缓存的无损音乐的支持
 - 音频文件信息也会进行缓存
 - 忽略掉非缓存（即文件名不是全数字组成）的文件
+- 默认不覆盖已转换的文件，可以使用 `--overwrite` 选项强制覆盖
 
 #### 2020 年 2 月 1 日
 

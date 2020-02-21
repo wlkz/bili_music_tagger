@@ -142,10 +142,12 @@ def get_year_from_timestamp(timestramp):
 
 
 class BilibiliMusicTagger:
-    def __init__(self, album_cache, audio_cache, cover_cache):
+    def __init__(self, album_cache, audio_cache, cover_cache, overwrite):
         self.album_cache = album_cache
         self.audio_cache = audio_cache
         self.cover_cache = cover_cache
+
+        self.overwrite = overwrite
 
     def process_a_dir(self, input_dir, output_dir):
         for p in input_dir.iterdir():
@@ -159,13 +161,30 @@ class BilibiliMusicTagger:
             return
 
         au_id = int(au_id)
-        audio_info = self.audio_cache.get(au_id)
 
-        filename = f'{spilt_artist_str(audio_info["author"])[0]} - {audio_info["title"]}'
+        file_kind = File(input_path)
+
+        if isinstance(file_kind, MP4):
+            suffix = '.m4a'
+        elif isinstance(file_kind, FLAC):
+            suffix = '.flac'
+        elif file_kind is None:
+            raise TypeError('unknown file kind')
+        else:
+            raise TypeError(
+                f'unsupport file kind {file_kind.__class__.__name__}')
+
+        audio_info = self.audio_cache.get(au_id)
+        filename = f'{spilt_artist_str(audio_info["author"])[0]} - {audio_info["title"]}{suffix}'
+
+        output_path = output_dir / filename
+
+        if not self.overwrite and output_path.is_file():
+            print(f'{filename} exists, skipped')
+            return
 
         print(f'processing: {filename}')
 
-        output_path = output_dir / filename
         shutil.copyfile(input_path, output_path)
 
         album_id = audio_info['pgc_info']['pgc_menu']['menuId']
@@ -191,7 +210,6 @@ class BilibiliMusicTagger:
         audio_file = File(output_path)
 
         if isinstance(audio_file, MP4):
-            suffix = '.m4a'
             tags = {
                 '\xa9nam': audio_info['title'],
                 '\xa9alb': album_info['menusRespones']['title'],
@@ -203,7 +221,6 @@ class BilibiliMusicTagger:
                 'covr': [MP4Cover(cover_image, imageformat=image_format)],
             }
         elif isinstance(audio_file, FLAC):
-            suffix = '.flac'
             tags = {
                 'ALBUM': album_info['menusRespones']['title'],
                 'ARTIST': format_artist_list(spilt_artist_str(audio_info['author'])),
@@ -221,21 +238,18 @@ class BilibiliMusicTagger:
             picture.type = PictureType.COVER_FRONT
 
             audio_file.add_picture(picture)
-        else:
-            raise TypeError(f'unknown file tpye')
 
         audio_file.update(tags)
         audio_file.save()
-
-        output_path.replace(output_path.with_suffix(suffix))
 
 
 @click.command()
 @click.argument('source', required=True, type=click.Path(exists=True))
 @click.argument('output_dir', default=Path.cwd() / 'output', type=click.Path())
 @click.option('--temp-dir', '-t', default=Path.cwd() / 'temp', show_default='./temp', type=click.Path(), help='temp directory, where some cache will put in.')
+@click.option('--overwrite', is_flag=True, help='overwrite file if file exists.')
 @click.version_option()
-def cli(source, output_dir, temp_dir):
+def cli(source, output_dir, temp_dir, overwrite):
     """A auto tagger for Bilibili music.
 
     SOURCE is a path to source directory or file.
@@ -253,7 +267,8 @@ def cli(source, output_dir, temp_dir):
     audio_cache = AudioCache(temp_dir)
     cover_cache = CoverCache(temp_dir)
 
-    tag_adder = BilibiliMusicTagger(album_cache, audio_cache, cover_cache)
+    tag_adder = BilibiliMusicTagger(
+        album_cache, audio_cache, cover_cache, overwrite)
 
     if source.is_dir():
         tag_adder.process_a_dir(source, output_dir)
